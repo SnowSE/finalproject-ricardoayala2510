@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v7.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v7.0": {
+      "FinalProject.Logic/1.0.0": {
+        "dependencies": {
+          "FinalProject.Data": "1.0.0"
+        },
+        "runtime": {
+          "FinalProject.Logic.dll": {}
+        }
+      },
+      "FinalProject.Data/1.0.0": {
+        "runtime": {
+          "FinalProject.Data.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "FinalProject.Logic/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FinalProject.Data/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

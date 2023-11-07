@@ -1,0 +1,11 @@
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/bin/Debug/net7.0/FinalProject.Data.deps.json
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/bin/Debug/net7.0/FinalProject.Data.dll
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/bin/Debug/net7.0/FinalProject.Data.pdb
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.AssemblyInfoInputs.cache
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.AssemblyInfo.cs
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.csproj.CoreCompileInputs.cache
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.dll
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/refint/FinalProject.Data.dll
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/FinalProject.Data.pdb
+/Users/ricardoayala/finalprojectRCK/FinalProject.Data/obj/Debug/net7.0/ref/FinalProject.Data.dll
