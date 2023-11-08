@@ -1,4 +1,7 @@
-﻿class Program
+﻿using RickData;
+using RickLogic;
+namespace RickUI;
+class Program
 {
 
     enum RoomType
@@ -65,8 +68,6 @@
         WriteCustomers("Customers.txt", customers);
         WriteRoomPrices("RoomPrices.txt", roomPrices);
     }
-
-    // ... (rest of the code)
 
     // Get room number from the user
     static int GetRoomNumber()
