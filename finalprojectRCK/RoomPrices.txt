@@ -1,3 +1,0 @@
-Single,150
-Double,150
-Suite,4000
