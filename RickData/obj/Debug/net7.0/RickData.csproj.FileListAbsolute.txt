@@ -1,0 +1,11 @@
+/Users/ricardoayala/finalproject/RickData/bin/Debug/net7.0/RickData.deps.json
+/Users/ricardoayala/finalproject/RickData/bin/Debug/net7.0/RickData.dll
+/Users/ricardoayala/finalproject/RickData/bin/Debug/net7.0/RickData.pdb
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.AssemblyInfoInputs.cache
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.AssemblyInfo.cs
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.csproj.CoreCompileInputs.cache
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.dll
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/refint/RickData.dll
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/RickData.pdb
+/Users/ricardoayala/finalproject/RickData/obj/Debug/net7.0/ref/RickData.dll
