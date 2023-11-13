@@ -1,0 +1,107 @@
+{
+  "version": 3,
+  "targets": {
+    "net7.0": {
+      "final.Data/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v7.0",
+        "compile": {
+          "bin/placeholder/final.Data.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/final.Data.dll": {}
+        }
+      },
+      "final.Logic/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v7.0",
+        "dependencies": {
+          "final.Data": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/final.Logic.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/final.Logic.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "final.Data/1.0.0": {
+      "type": "project",
+      "path": "../final.Data/final.Data.csproj",
+      "msbuildProject": "../final.Data/final.Data.csproj"
+    },
+    "final.Logic/1.0.0": {
+      "type": "project",
+      "path": "../final.Logic/final.Logic.csproj",
+      "msbuildProject": "../final.Logic/final.Logic.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net7.0": [
+      "final.Logic >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/Users/ricardoayala/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.UI/final.UI.csproj",
+      "projectName": "final.UI",
+      "projectPath": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.UI/final.UI.csproj",
+      "packagesPath": "/Users/ricardoayala/.nuget/packages/",
+      "outputPath": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.UI/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/Users/ricardoayala/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net7.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "projectReferences": {
+            "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Logic/final.Logic.csproj": {
+              "projectPath": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Logic/final.Logic.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net7.0": {
+        "targetAlias": "net7.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.400/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
