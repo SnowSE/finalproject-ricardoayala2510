@@ -16,3 +16,4 @@
 151,Suite
 152,Suite
 400,Double
+900,Single

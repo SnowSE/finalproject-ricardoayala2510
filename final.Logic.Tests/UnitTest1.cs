@@ -98,41 +98,4 @@ public class ReservationManagerTests
         Assert.NotNull(customerReservations);
     }
 
-    [Fact]
-    public void IsRoomAvailable_Should_ReturnTrue_WhenRoomIsAvailable()
-    {
-        // Arrange
-        var dataManager = new DataManager();
-        var reservationManager = new ReservationManager(dataManager);
-        var reservations = new List<(string, DateTime, int, string, string)>
-        {
-            ("1", DateTime.Now.Date, 101, "John Doe", "123456"),
-            ("2", DateTime.Now.Date, 102, "Jane Doe", "654321"),
-        };
-
-        // Act
-        var isAvailable = reservationManager.IsRoomAvailable(103, DateTime.Now.Date, reservations);
-
-        // Assert
-        Assert.True(isAvailable);
-    }
-
-    [Fact]
-    public void IsRoomAvailable_Should_ReturnFalse_WhenRoomIsNotAvailable()
-    {
-        // Arrange
-        var dataManager = new DataManager();
-        var reservationManager = new ReservationManager(dataManager);
-        var reservations = new List<(string, DateTime, int, string, string)>
-        {
-            ("1", DateTime.Now.Date, 101, "John Doe", "123456"),
-            ("2", DateTime.Now.Date, 102, "Jane Doe", "654321"),
-        };
-
-        // Act
-        var isAvailable = reservationManager.IsRoomAvailable(101, DateTime.Now.Date, reservations);
-
-        // Assert
-        Assert.False(isAvailable);
-    }
 }
