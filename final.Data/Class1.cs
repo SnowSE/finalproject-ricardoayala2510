@@ -1,19 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace final.Data
+namespace final.data
 {
-    public class DataManager
+    /// A static class representing a data manager with methods to read and write room, customer, and reservation data to files.
+    public static class DataManager
     {
-        private string roomsFilePath = "Rooms.txt";
-        private string customersFilePath = "Customers.txt";
-        private string reservationsFilePath = "Reservations.txt";
+        // File paths for storing data
+        private static string roomsFilePath = FindFile("Rooms.txt");
+        private static string customersFilePath = FindFile("Customers.txt");
+        private static string reservationsFilePath = FindFile("Reservations.txt");
 
-        public List<(int roomNumber, string roomType)> ReadRooms()
+        /// Finds a file in the current directory and its parent directories.
+        /// <param name="fileName">The name of the file to find.</param>
+        /// <returns>The full path to the file.</returns>
+        public static string FindFile(string fileName)
         {
-            List<(int roomNumber, string roomType)> roomList = new List<(int, string)>();
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (true)
+            {
+                var testPath = Path.Combine(directory.FullName, fileName);
+                if (File.Exists(testPath))
+                {
+                    return testPath;
+                }
+
+                if (directory.FullName == directory.Root.FullName)
+                {
+                    throw new FileNotFoundException($"Could not find {fileName} in the current directory or any parent directories.");
+                }
+                directory = directory.Parent;
+            }
+        }
+
+        /// Reads room data from the 'Rooms.txt' file and returns a list of room tuples.
+        public static List<Tuple<int, string>> ReadRooms()
+        {
+            List<Tuple<int, string>> roomList = new List<Tuple<int, string>>();
 
             if (File.Exists(roomsFilePath))
             {
@@ -22,43 +46,44 @@ namespace final.Data
                     string[] parts = line.Split(',');
                     int roomNumber = int.Parse(parts[0]);
                     string roomType = parts[1];
-                    roomList.Add((roomNumber, roomType));
+                    roomList.Add(new Tuple<int, string>(roomNumber, roomType));
                 }
             }
 
             return roomList;
         }
-public List<(string customerName, string cardNumber)> ReadCustomers()
-{
-    List<(string customerName, string cardNumber)> customerList = new List<(string, string)>();
 
-    if (File.Exists(customersFilePath))
-    {
-        foreach (string line in File.ReadLines(customersFilePath))
+        /// Reads customer data from the 'Customers.txt' file and returns a list of customer tuples.
+        public static List<Tuple<string, string>> ReadCustomers()
         {
-            string[] parts = line.Split(',');
+            List<Tuple<string, string>> customerList = new List<Tuple<string, string>>();
 
-            // Check if the array has at least two elements before accessing them
-            if (parts.Length >= 2)
+            if (File.Exists(customersFilePath))
             {
-                string customerName = parts[0];
-                string cardNumber = parts[1];
-                customerList.Add((customerName, cardNumber));
+                foreach (string line in File.ReadLines(customersFilePath))
+                {
+                    string[] parts = line.Split(',');
+
+                    if (parts.Length >= 2)
+                    {
+                        string customerName = parts[0];
+                        string cardNumber = parts[1];
+                        customerList.Add(new Tuple<string, string>(customerName, cardNumber));
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid data format in line: {line}");
+                    }
+                }
             }
-            else
-            {
-                Console.WriteLine($"Invalid data format in line: {line}");
-            }
+
+            return customerList;
         }
-    }
 
-    return customerList;
-}
-
-
-        public List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> ReadReservations()
+        /// Reads reservation data from the 'Reservations.txt' file and returns a list of reservation tuples.
+        public static List<Tuple<string, DateTime, int, string, string>> ReadReservations()
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservationList = new List<(string, DateTime, int, string, string)>();
+            List<Tuple<string, DateTime, int, string, string>> reservationList = new List<Tuple<string, DateTime, int, string, string>>();
 
             if (File.Exists(reservationsFilePath))
             {
@@ -70,66 +95,76 @@ public List<(string customerName, string cardNumber)> ReadCustomers()
                     int roomNumber = int.Parse(parts[2]);
                     string customerName = parts[3];
                     string paymentConfirmation = parts[4];
-                    reservationList.Add((reservationNumber, date, roomNumber, customerName, paymentConfirmation));
+                    reservationList.Add(new Tuple<string, DateTime, int, string, string>(reservationNumber, date, roomNumber, customerName, paymentConfirmation));
                 }
             }
 
             return reservationList;
         }
 
-        public void WriteRooms(List<(int roomNumber, string roomType)> rooms)
+        /// Writes room data to the 'Rooms.txt' file.
+        public static void WriteRooms(List<Tuple<int, string>> rooms)
         {
             using (StreamWriter writer = new StreamWriter(roomsFilePath))
             {
-                foreach ((int roomNumber, string roomType) in rooms)
+                foreach (var room in rooms)
                 {
-                    writer.WriteLine($"{roomNumber},{roomType}");
+                    writer.WriteLine($"{room.Item1},{room.Item2}");
                 }
             }
         }
 
-        public void WriteCustomers(List<(string customerName, string cardNumber)> customers)
+        /// Writes customer data to the 'Customers.txt' file.
+        public static void WriteCustomers(List<Tuple<string, string>> customers)
         {
             using (StreamWriter writer = new StreamWriter(customersFilePath))
             {
-                foreach ((string customerName, string cardNumber) in customers)
+                foreach (var customer in customers)
                 {
-                    writer.WriteLine($"{customerName},{cardNumber}");
+                    writer.WriteLine($"{customer.Item1},{customer.Item2}");
                 }
             }
         }
 
-        public void WriteReservations(List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations)
+        /// Writes reservation data to the 'Reservations.txt' file.
+        public static void WriteReservations(List<Tuple<string, DateTime, int, string, string>> reservations)
         {
             using (StreamWriter writer = new StreamWriter(reservationsFilePath))
             {
-                foreach ((string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation) in reservations)
+                foreach (var reservation in reservations)
                 {
-                    writer.WriteLine($"{reservationNumber},{date},{roomNumber},{customerName},{paymentConfirmation}");
+                    writer.WriteLine($"{reservation.Item1},{reservation.Item2},{reservation.Item3},{reservation.Item4},{reservation.Item5}");
                 }
             }
         }
-                public void AddNewRoom(int newRoomNumber, string newRoomType)
+
+        /// Adds a new room with the specified number and type.
+
+        public static void AddNewRoom(int newRoomNumber, string newRoomType)
         {
-            List<(int roomNumber, string roomType)> rooms = ReadRooms();
-            rooms.Add((newRoomNumber, newRoomType));
+            List<Tuple<int, string>> rooms = ReadRooms();
+            rooms.Add(new Tuple<int, string>(newRoomNumber, newRoomType));
             WriteRooms(rooms);
         }
 
-        public void AddNewCustomer(string newCustomerName, string newCardNumber)
+        /// Adds a new customer with the specified name and card number.
+        public static void AddNewCustomer(string newCustomerName, string newCardNumber)
         {
-            List<(string customerName, string cardNumber)> customers = ReadCustomers();
-            customers.Add((newCustomerName, newCardNumber));
+            List<Tuple<string, string>> customers = ReadCustomers();
+            customers.Add(new Tuple<string, string>(newCustomerName, newCardNumber));
             WriteCustomers(customers);
         }
 
-        public void AddNewReservation(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)
+        /// Adds a new reservation with specified details.
+        public static void AddNewReservation(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations = ReadReservations();
-            reservations.Add((reservationNumber, date, roomNumber, customerName, paymentConfirmation));
+            List<Tuple<string, DateTime, int, string, string>> reservations = ReadReservations();
+            reservations.Add(new Tuple<string, DateTime, int, string, string>(reservationNumber, date, roomNumber, customerName, paymentConfirmation));
             WriteReservations(reservations);
         }
-                public void SaveChanges()
+
+        /// Saves changes by writing all data to their respective files.
+        public static void SaveChanges()
         {
             try
             {
@@ -142,5 +177,36 @@ public List<(string customerName, string cardNumber)> ReadCustomers()
                 Console.WriteLine($"Error saving changes: {ex.Message}");
             }
         }
+public static void ChangePrice(string roomType, decimal newPrice)
+{
+    // Read existing rooms from the data manager
+    List<Tuple<int, string>> rooms = ReadRooms();
+
+    // Flag to check if the room type is found
+    bool roomTypeFound = false;
+
+    // Iterate through the rooms
+    for (int i = 0; i < rooms.Count; i++)
+    {
+        // Check if the room type matches
+        if (rooms[i].Item2 == roomType)
+        {
+            // Update the price for the matched room type
+            rooms[i] = new Tuple<int, string>(rooms[i].Item1, roomType + "," + newPrice.ToString());
+            roomTypeFound = true;
+            break;
+        }
+    }
+
+    // If the room type is not found, add a new entry with the specified price
+    if (!roomTypeFound)
+    {
+        rooms.Add(new Tuple<int, string>(rooms.Count + 1, roomType + "," + newPrice.ToString()));
+    }
+
+    // Write the updated rooms list to the data manager
+    WriteRooms(rooms);
+}
+
     }
 }

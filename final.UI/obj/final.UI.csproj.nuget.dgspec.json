@@ -136,6 +136,9 @@
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {
+              "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Data/final.Data.csproj": {
+                "projectPath": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Data/final.Data.csproj"
+              },
               "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Logic/final.Logic.csproj": {
                 "projectPath": "/Users/ricardoayala/finalproject1/finalproject-ricardoayala2510/final.Logic/final.Logic.csproj"
               }

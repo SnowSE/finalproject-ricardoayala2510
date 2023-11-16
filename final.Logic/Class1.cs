@@ -1,106 +1,207 @@
 ﻿using System;
 using System.Collections.Generic;
-using final.Data;
+using final.data;
 
-namespace final.Logic
+namespace final.logic
 {
-    public class ReservationManager
+
+    /// A static class representing a reservation manager with various methods for room, customer, and reservation management.
+    public static class ReservationManager
     {
-        private readonly DataManager dataManager;
-
-        public ReservationManager(DataManager dataManager)
+  
+        /// Adds a new room with the specified number and type.
+    
+        public static void AddNewRoom(int newRoomNumber, string newRoomType)
         {
-            this.dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            // Read existing rooms from the data manager
+            List<Tuple<int, string>> rooms = DataManager.ReadRooms();
+
+            // Add the new room to the list
+            rooms.Add(new Tuple<int, string>(newRoomNumber, newRoomType));
+
+            // Write the updated rooms list to the data manager
+            DataManager.WriteRooms(rooms);
+
+            // Save changes to the data manager
+            DataManager.SaveChanges();
         }
 
-        public void AddNewRoom(int newRoomNumber, string newRoomType)
+    
+        /// Adds a new customer with the specified name and card number.
+        
+        public static void AddNewCustomer(string newCustomerName, string newCardNumber)
         {
-            List<(int roomNumber, string roomType)> rooms = dataManager.ReadRooms();
-            rooms.Add((newRoomNumber, newRoomType));
-            dataManager.WriteRooms(rooms);
-            dataManager.SaveChanges();
+            // Read existing customers from the data manager
+            List<Tuple<string, string>> customers = DataManager.ReadCustomers();
+
+            // Add the new customer to the list
+            customers.Add(new Tuple<string, string>(newCustomerName, newCardNumber));
+
+            // Write the updated customers list to the data manager
+            DataManager.WriteCustomers(customers);
+
+            // Save changes to the data manager
+            DataManager.SaveChanges();
         }
 
-        public void AddNewCustomer(string newCustomerName, string newCardNumber)
-        {
-            List<(string customerName, string cardNumber)> customers = dataManager.ReadCustomers();
-            customers.Add((newCustomerName, newCardNumber));
-            dataManager.WriteCustomers(customers);
-            dataManager.SaveChanges();
-        }
 
-        public void AddNewReservation(DateTime newReservationDate, int newReservationRoomNumber, string newReservationCustomerName)
+        /// Adds a new reservation with the specified date, room number, and customer name.
+    
+        public static void AddNewReservation(DateTime newReservationDate, int newReservationRoomNumber, string newReservationCustomerName)
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations = dataManager.ReadReservations();
-            List<(int roomNumber, string roomType)> rooms = dataManager.ReadRooms();
-            List<(string customerName, string cardNumber)> customers = dataManager.ReadCustomers();
+            // Read existing reservations, rooms, and customers from the data manager
+            List<Tuple<string, DateTime, int, string, string>> reservations = DataManager.ReadReservations();
+            List<Tuple<int, string>> rooms = DataManager.ReadRooms();
+            List<Tuple<string, string>> customers = DataManager.ReadCustomers();
 
+            // Check if the room is available for reservation
             if (IsRoomAvailable(newReservationRoomNumber, newReservationDate, reservations))
             {
-                if (customers.Any(c => c.customerName == newReservationCustomerName))
+                // Check if the customer exists
+                if (CustomersContainName(customers, newReservationCustomerName))
                 {
+                    // Generate payment confirmation and reservation number
                     string paymentConfirmation = Guid.NewGuid().ToString().Substring(0, 30);
                     string reservationNumber = Guid.NewGuid().ToString();
 
-                    reservations.Add((reservationNumber, newReservationDate, newReservationRoomNumber, newReservationCustomerName, paymentConfirmation));
-                    dataManager.WriteReservations(reservations);
-                    dataManager.SaveChanges();
+                    // Add the new reservation to the list
+                    reservations.Add(new Tuple<string, DateTime, int, string, string>(
+                        reservationNumber, newReservationDate, newReservationRoomNumber, newReservationCustomerName, paymentConfirmation));
+
+                    // Write the updated reservations list to the data manager
+                    DataManager.WriteReservations(reservations);
+
+                    // Save changes to the data manager
+                    DataManager.SaveChanges();
                 }
                 else
                 {
-                    Console.WriteLine($"Error: Customer '{newReservationCustomerName}' not found.");
+                    // Throw an exception if the customer is not found
+                    throw new InvalidOperationException($"Error: Customer '{newReservationCustomerName}' not found.");
                 }
             }
             else
             {
-                Console.WriteLine($"Error: Room {newReservationRoomNumber} is not available on {newReservationDate.ToShortDateString()}.");
+                // Throw an exception if the room is not available
+                throw new InvalidOperationException($"Error: Room {newReservationRoomNumber} is not available on {newReservationDate.ToShortDateString()}.");
             }
         }
 
-        public List<int> AvailableRoomSearch(DateTime searchDate)
+    
+        /// Searches for available rooms on a specific date.
+        public static List<int> AvailableRoomSearch(DateTime searchDate)
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations = dataManager.ReadReservations();
-            List<(int roomNumber, string roomType)> rooms = dataManager.ReadRooms();
+            // Read existing reservations and rooms from the data manager
+            List<Tuple<string, DateTime, int, string, string>> reservations = DataManager.ReadReservations();
+            List<Tuple<int, string>> rooms = DataManager.ReadRooms();
 
-            List<int> reservedRooms = reservations
-                .Where(r => r.date.Date == searchDate.Date)
-                .Select(r => r.roomNumber)
-                .ToList();
+            // List to store reserved room numbers
+            List<int> reservedRooms = new List<int>();
 
-            List<int> availableRooms = rooms
-                .Where(r => !reservedRooms.Contains(r.roomNumber))
-                .Select(r => r.roomNumber)
-                .ToList();
+            // Iterate through reservations to find reserved rooms on the specified date
+            foreach (var reservation in reservations)
+            {
+                if (reservation.Item2.Date == searchDate.Date)
+                {
+                    reservedRooms.Add(reservation.Item3);
+                }
+            }
+
+            // List to store available room numbers
+            List<int> availableRooms = new List<int>();
+
+            // Iterate through rooms to find available rooms
+            foreach (var room in rooms)
+            {
+                if (!reservedRooms.Contains(room.Item1))
+                {
+                    availableRooms.Add(room.Item1);
+                }
+            }
 
             return availableRooms;
         }
 
-        public List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> ReservationReport(DateTime reportDate)
+    
+        /// Generates a report of reservations for a specific date.
+    
+        public static List<Tuple<string, DateTime, int, string, string>> ReservationReport(DateTime reportDate)
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations = dataManager.ReadReservations();
+            // Read existing reservations from the data manager
+            List<Tuple<string, DateTime, int, string, string>> reservations = DataManager.ReadReservations();
 
-            var reservationsForDate = reservations
-                .Where(r => r.date.Date == reportDate.Date)
-                .ToList();
+            // List to store reservations for the specified date
+            List<Tuple<string, DateTime, int, string, string>> reservationsForDate = new List<Tuple<string, DateTime, int, string, string>>();
+
+            // Iterate through reservations to find reservations for the specified date
+            foreach (var reservation in reservations)
+            {
+                if (reservation.Item2.Date == reportDate.Date)
+                {
+                    reservationsForDate.Add(reservation);
+                }
+            }
 
             return reservationsForDate;
         }
 
-        public List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> CustomerReservationReport(string customerName)
+        
+        /// Generates a report of reservations for a specific customer.
+        public static List<Tuple<string, DateTime, int, string, string>> CustomerReservationReport(string customerName)
         {
-            List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations = dataManager.ReadReservations();
+            // Read existing reservations from the data manager
+            List<Tuple<string, DateTime, int, string, string>> reservations = DataManager.ReadReservations();
 
-            var customerReservations = reservations
-                .Where(r => r.customerName == customerName && r.date.Date >= DateTime.Now.Date)
-                .ToList();
+            // List to store reservations for the specified customer
+            List<Tuple<string, DateTime, int, string, string>> customerReservations = new List<Tuple<string, DateTime, int, string, string>>();
+
+            // Iterate through reservations to find reservations for the specified customer
+            foreach (var reservation in reservations)
+            {
+                if (reservation.Item4 == customerName && reservation.Item2.Date >= DateTime.Now.Date)
+                {
+                    customerReservations.Add(reservation);
+                }
+            }
 
             return customerReservations;
         }
 
-        public bool IsRoomAvailable(int roomNumber, DateTime date, List<(string reservationNumber, DateTime date, int roomNumber, string customerName, string paymentConfirmation)> reservations)
+    
+        /// Checks if a room is available on a specific date.
+       
+        public static bool IsRoomAvailable(int roomNumber, DateTime date, List<Tuple<string, DateTime, int, string, string>> reservations)
         {
-            return !reservations.Any(r => r.roomNumber == roomNumber && r.date.Date == date.Date);
+            // Iterate through reservations to check if the room is available on the specified date
+            foreach (var reservation in reservations)
+            {
+                if (reservation.Item3 == roomNumber && reservation.Item2.Date == date.Date)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
-}
+        /// Checks if the list of customers contains a customer with the specified name.
+        public static bool CustomersContainName(List<Tuple<string, string>> customers, string name)
+        {
+            // Iterate through customers to check if a customer with the specified name exists
+            foreach (var customer in customers)
+            {
+                if (customer.Item1 == name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+     public static void ChangeRoomPrice(string roomType, decimal newPrice)
+    {
+        // Use the data manager to change the price of a room type
+        DataManager.ChangePrice(roomType, newPrice);
+    }
+
+    }
 }

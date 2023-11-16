@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v7.0": {
       "final.UI/1.0.0": {
         "dependencies": {
+          "final.Data": "1.0.0",
           "final.Logic": "1.0.0"
         },
         "runtime": {
