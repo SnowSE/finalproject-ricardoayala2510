@@ -13,8 +13,7 @@ public static class Program
             Console.WriteLine("4. Available Room Search");
             Console.WriteLine("5. Reservation Report");
             Console.WriteLine("6. Customer Reservation Report");
-            Console.WriteLine("7. Change Room Price");
-            Console.WriteLine("8. Exit");
+            Console.WriteLine("7. Exit");
 
             Console.Write("Enter your choice: ");
             if (int.TryParse(Console.ReadLine(), out int choice))
@@ -40,9 +39,6 @@ public static class Program
                         ProcessCustomerReservationReport();
                         break;
                     case 7:
-                        ChangeRoomPrice();
-                        break;
-                    case 8:
                         Console.WriteLine("Exiting the program.");
                         return;
                     default:
@@ -176,20 +172,5 @@ public static class Program
             Console.WriteLine("No reservations found for the specified customer.");
         }
     }
-    private static void ChangeRoomPrice()
-    {
-        Console.Write("Enter the room type to change the price: ");
-        string roomType = Console.ReadLine();
-
-        Console.Write("Enter the new price: ");
-        if (decimal.TryParse(Console.ReadLine(), out decimal newPrice))
-        {
-            ReservationManager.ChangeRoomPrice(roomType, newPrice);
-            Console.WriteLine($"Price for room type '{roomType}' changed to {newPrice:C}");
-        }
-        else
-        {
-            Console.WriteLine("Invalid price format. Please enter a valid decimal value.");
-        }
-    }
+ 
 }
