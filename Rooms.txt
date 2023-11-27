@@ -1,0 +1,9 @@
+101,Single
+102,Single
+103,Single
+104,Single
+110,Double
+111,Double
+150,Suite
+151,Suite
+152,Suite

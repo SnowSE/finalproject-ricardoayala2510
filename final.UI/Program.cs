@@ -3,8 +3,10 @@ using final.logic;
 
 public static class Program
 {
+
     public static void Main()
     {
+        ReservationManager.LoadData();
         while (true)
         {
             Console.WriteLine("1. Add New Room");
@@ -13,7 +15,9 @@ public static class Program
             Console.WriteLine("4. Available Room Search");
             Console.WriteLine("5. Reservation Report");
             Console.WriteLine("6. Customer Reservation Report");
-            Console.WriteLine("7. Exit");
+            Console.WriteLine("7. Change Room price");
+            Console.WriteLine("8. Refund Reservation");
+            Console.WriteLine("9. Exit");
 
             Console.Write("Enter your choice: ");
             if (int.TryParse(Console.ReadLine(), out int choice))
@@ -39,6 +43,13 @@ public static class Program
                         ProcessCustomerReservationReport();
                         break;
                     case 7:
+                        ProcessChangeRoomPrice();
+                        break;
+                    case 8:
+                         ProcessRefundReservation();
+                         break;
+                    case 9:
+                        ReservationManager.SaveData();
                         Console.WriteLine("Exiting the program.");
                         return;
                     default:
@@ -171,6 +182,44 @@ public static class Program
         {
             Console.WriteLine("No reservations found for the specified customer.");
         }
+    
     }
- 
+private static void ProcessChangeRoomPrice()
+{
+    Console.Write("Enter the room type to change the price (Single,Double,Suite): ");
+    string roomType = Console.ReadLine();
+
+    Console.Write("Enter the new room price: ");
+    if (decimal.TryParse(Console.ReadLine(), out decimal newPrice))
+    {
+        try
+        {
+            ReservationManager.ChangeRoomPrice(roomType, newPrice);
+            Console.WriteLine($"Room {roomType} price changed to {newPrice:C} successfully.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid input. Please enter a valid price.");
+    }
+}
+ private static void ProcessRefundReservation()
+    {
+        Console.Write("Enter the reservation number to refund: ");
+        string reservationNumber = Console.ReadLine();
+
+        try
+        {
+            ReservationManager.RefundReservation(reservationNumber);
+            Console.WriteLine($"Reservation {reservationNumber} refunded successfully.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
 }

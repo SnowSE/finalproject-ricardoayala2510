@@ -10,15 +10,14 @@ public class ReservationManagerTests
     public void AddNewRoom_Should_AddRoomToList()
     {
         // Arrange
-        int roomNumber = 101;
-        string roomType = "Single";
+        (int roomNumber, string roomType) newRoom = (101, "Single");
 
         // Act
-        ReservationManager.AddNewRoom(roomNumber, roomType);
+        ReservationManager.AddNewRoom(newRoom.roomNumber, newRoom.roomType);
 
         // Assert
         var rooms = DataManager.ReadRooms();
-        Assert.Contains(new Tuple<int, string>(roomNumber, roomType), rooms);
+        Assert.Contains(newRoom, rooms) ;
     }
 
     [Fact]
@@ -33,33 +32,28 @@ public class ReservationManagerTests
 
         // Assert
         var customers = DataManager.ReadCustomers();
-        Assert.Contains(new Tuple<string, string>(customerName, cardNumber), customers);
+        Assert.Contains((customerName, cardNumber), customers);
     }
 
     [Fact]
     public void AddNewReservation_Should_AddReservationToList()
     {
         // Arrange
+
+         ReservationManager.ClearData();
+         ReservationManager.AddNewCustomer("John Doe","12234455667");
+         ReservationManager.AddNewRoom(101,"Single");
         DateTime reservationDate = DateTime.Now.Date;
         int roomNumber = 101;
         string customerName = "John Doe";
 
         // Act
         ReservationManager.AddNewReservation(reservationDate, roomNumber, customerName);
-
+  
         // Assert
-        var reservations = DataManager.ReadReservations();
-        bool found = false;
-        foreach (var reservation in reservations)
-        {
-            if (reservation.Item3 == roomNumber && reservation.Item4 == customerName && reservation.Item2.Date == reservationDate)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        Assert.True(found);
+       var customerReservations = ReservationManager.CustomerReservationReport(customerName);
+       Assert.Equal(1,customerReservations.Count);
+      
     }
 
     [Fact]
@@ -136,7 +130,7 @@ public class ReservationManagerTests
     {
         // Arrange
         string customerName = "John Doe";
-        var customers = new List<Tuple<string, string>> { Tuple.Create(customerName, "1234567890123456") };
+        var customers = new List<(string, string)> { (customerName, "1234567890123456") };
 
         // Act
         var result = ReservationManager.CustomersContainName(customers, customerName);
@@ -150,7 +144,7 @@ public class ReservationManagerTests
     {
         // Arrange
         string customerName = "John Doe";
-        var customers = new List<Tuple<string, string>> { Tuple.Create("Jane Doe", "1234567890123456") };
+        var customers = new List<(string, string)> { ("Jane Doe", "1234567890123456") };
 
         // Act
         var result = ReservationManager.CustomersContainName(customers, customerName);
@@ -159,29 +153,5 @@ public class ReservationManagerTests
         Assert.False(result);
     }
 
-    [Fact]
-    public void ChangeRoomPrice_Should_UpdateRoomPrice()
-    {
-        // Arrange
-        string roomType = "Single";
-        decimal newPrice = 150.00m;
 
-        // Act
-        DataManager.ChangePrice(roomType, newPrice);
-
-        // Assert
-        var rooms = DataManager.ReadRooms();
-        bool found = false;
-        foreach (var room in rooms)
-        {
-            if (room.Item2 == roomType)
-            {
-                found = true;
-                Assert.Equal(newPrice, Convert.ToDecimal(room.Item2));
-                break;
-            }
-        }
-
-        Assert.True(found);
-    }
 }
