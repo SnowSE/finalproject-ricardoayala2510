@@ -7,6 +7,7 @@ public static class Program
     public static void Main()
     {
         ReservationManager.LoadData();
+        Console.Clear();
         while (true)
         {
             Console.WriteLine("1. Add New Room");
@@ -17,7 +18,10 @@ public static class Program
             Console.WriteLine("6. Customer Reservation Report");
             Console.WriteLine("7. Change Room price");
             Console.WriteLine("8. Refund Reservation");
-            Console.WriteLine("9. Exit");
+            Console.WriteLine("9. See Room Types and Prices");
+            Console.WriteLine("10. Utilization report for a day");
+            Console.WriteLine("11. Utilization report for a date range");
+            Console.WriteLine("12. Exit");
 
             Console.Write("Enter your choice: ");
             if (int.TryParse(Console.ReadLine(), out int choice))
@@ -46,9 +50,19 @@ public static class Program
                         ProcessChangeRoomPrice();
                         break;
                     case 8:
-                         ProcessRefundReservation();
-                         break;
+                        ProcessRefundReservation();
+                        break;
                     case 9:
+                        PrintRoomPrices();
+                        break;
+                    case 10:
+                        GenerateUtilizationReport();
+                        break;
+                    case 11:
+                        GenerateUtilizationReportRange();
+                        break;
+
+                    case 12:
                         ReservationManager.SaveData();
                         Console.WriteLine("Exiting the program.");
                         return;
@@ -97,35 +111,54 @@ public static class Program
 
     private static void ProcessAddNewReservation()
     {
-        Console.Write("Enter the reservation date (MM/DD/YYYY): ");
-        if (DateTime.TryParse(Console.ReadLine(), out DateTime newReservationDate))
+        Console.Write("Enter the check-in date (MM/DD/YYYY): ");
+        if (DateTime.TryParse(Console.ReadLine(), out DateTime checkInDate))
         {
-            Console.Write("Enter the room number for the reservation: ");
-            if (int.TryParse(Console.ReadLine(), out int newReservationRoomNumber))
+            Console.Write("Enter the check-out date (MM/DD/YYYY): ");
+            if (DateTime.TryParse(Console.ReadLine(), out DateTime checkOutDate))
             {
-                Console.Write("Enter the customer name for the reservation: ");
-                string newReservationCustomerName = Console.ReadLine();
+                Console.Write("Enter the room number for the reservation: ");
+                if (int.TryParse(Console.ReadLine(), out int newReservationRoomNumber))
+                {
+                    Console.Write("Enter the customer name for the reservation: ");
+                    string newReservationCustomerName = Console.ReadLine();
 
-                try
-                {
-                    ReservationManager.AddNewReservation(newReservationDate, newReservationRoomNumber, newReservationCustomerName);
-                    Console.WriteLine("Reservation added successfully.");
+                    try
+                    {
+                        ReservationManager.AddNewReservation(checkInDate, checkOutDate, newReservationRoomNumber, newReservationCustomerName);
+
+                        // Fetch room type and price from RoomPrices.txt
+                        Console.Write("Enter the room type (Single, Double, Suite): ");
+                        string roomType = Console.ReadLine();
+
+                        decimal roomPrice = ReservationManager.GetRoomPrice(roomType);
+
+                        // Calculate the discounted price
+                        decimal discountedPrice = ReservationManager.CalculateDiscountedPrice(roomPrice, newReservationCustomerName);
+
+                        Console.WriteLine($"Reservation added successfully. Total Price: {discountedPrice:C}");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-                catch (InvalidOperationException ex)
+                else
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Invalid input. Please enter a valid room number.");
                 }
             }
             else
             {
-                Console.WriteLine("Invalid input. Please enter a valid room number.");
+                Console.WriteLine("Invalid input. Please enter a valid check-out date.");
             }
         }
         else
         {
-            Console.WriteLine("Invalid input. Please enter a valid date.");
+            Console.WriteLine("Invalid input. Please enter a valid check-in date.");
         }
     }
+
 
     private static void ProcessAvailableRoomSearch()
     {
@@ -182,32 +215,32 @@ public static class Program
         {
             Console.WriteLine("No reservations found for the specified customer.");
         }
-    
-    }
-private static void ProcessChangeRoomPrice()
-{
-    Console.Write("Enter the room type to change the price (Single,Double,Suite): ");
-    string roomType = Console.ReadLine();
 
-    Console.Write("Enter the new room price: ");
-    if (decimal.TryParse(Console.ReadLine(), out decimal newPrice))
+    }
+    private static void ProcessChangeRoomPrice()
     {
-        try
+        Console.Write("Enter the room type to change the price (Single,Double,Suite): ");
+        string roomType = Console.ReadLine();
+
+        Console.Write("Enter the new room price: ");
+        if (decimal.TryParse(Console.ReadLine(), out decimal newPrice))
         {
-            ReservationManager.ChangeRoomPrice(roomType, newPrice);
-            Console.WriteLine($"Room {roomType} price changed to {newPrice:C} successfully.");
+            try
+            {
+                ReservationManager.ChangeRoomPrice(roomType, newPrice);
+                Console.WriteLine($"Room {roomType} price changed to {newPrice:C} successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
-        catch (InvalidOperationException ex)
+        else
         {
-            Console.WriteLine(ex.Message);
+            Console.WriteLine("Invalid input. Please enter a valid price.");
         }
     }
-    else
-    {
-        Console.WriteLine("Invalid input. Please enter a valid price.");
-    }
-}
- private static void ProcessRefundReservation()
+    private static void ProcessRefundReservation()
     {
         Console.Write("Enter the reservation number to refund: ");
         string reservationNumber = Console.ReadLine();
@@ -222,4 +255,53 @@ private static void ProcessChangeRoomPrice()
             Console.WriteLine(ex.Message);
         }
     }
+
+    private static void PrintRoomPrices()
+    {
+
+        string roomPricesText = ReservationManager.GetRoomPricesText();
+        Console.WriteLine(roomPricesText);
+
+    }
+    private static void GenerateUtilizationReport()
+    {
+        Console.Write("Enter the date for the Utilization Report (MM/DD/YYYY): ");
+        if (DateTime.TryParse(Console.ReadLine(), out DateTime reportDate))
+        {
+            decimal utilizationRate = ReservationManager.CalculateUtilizationRate(reportDate);
+            Console.WriteLine($"Utilization Rate for {reportDate.ToShortDateString()}: {utilizationRate:F2}%");
+        }
+        else
+        {
+            Console.WriteLine("Invalid date format. Please enter a valid date.");
+        }
+    }
+
+    private static void GenerateUtilizationReportRange()
+    {
+        Console.Write("Enter the start date for the Utilization Report (MM/DD/YYYY): ");
+        if (DateTime.TryParse(Console.ReadLine(), out DateTime startDate))
+        {
+            Console.Write("Enter the end date for the Utilization Report (MM/DD/YYYY): ");
+            if (DateTime.TryParse(Console.ReadLine(), out DateTime endDate))
+            {
+                List<decimal> utilizationRates = ReservationManager.CalculateUtilizationRateRange(startDate, endDate);
+
+                Console.WriteLine($"Utilization Report for the Date Range ({startDate.ToShortDateString()} to {endDate.ToShortDateString()}):");
+                for (int i = 0; i < utilizationRates.Count; i++)
+                {
+                    Console.WriteLine($"{startDate.AddDays(i).ToShortDateString()}: {utilizationRates[i]:F2}%");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid end date format. Please enter a valid date.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid start date format. Please enter a valid date.");
+        }
+    }
+
 }

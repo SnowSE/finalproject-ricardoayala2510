@@ -12,6 +12,7 @@ namespace final.data
         private static string customersFilePath = FindFile("Customers.txt");
         private static string reservationsFilePath = FindFile("Reservations.txt");
         private static string roomPricesFilePath = FindFile("RoomPrices.txt");
+        private static string refundsFilePath = FindFile("Refunds.txt");
         /// Finds a file in the current directory and its parent directories.
         /// <param name="fileName">The name of the file to find.</param>
         /// <returns>The full path to the file.</returns>
@@ -171,21 +172,57 @@ public static void WriteRoomPrices(List<(string, decimal)> roomPrices)
         }
     }
 }
-public static void WriteRefunds(List<Tuple<string, DateTime, int, string, string>> refunds, List<Tuple<string, DateTime, int, string, string>> reservations)
+
+public static void WriteRefunds(Tuple<string, DateTime, int, string, string> refund)
 {
-    using (StreamWriter writer = new StreamWriter(reservationsFilePath))
+    // File path for the refunds file
+    string refundsFilePath = "Refunds.txt";
+
+    // Write the refund to the refunds file
+    using (StreamWriter writer = new StreamWriter(refundsFilePath, true))
     {
-        foreach (var reservation in reservations)
-        {
-            // Skip the refunded reservation while writing to the file
-            if (!refunds.Contains(reservation))
-            {
-                writer.WriteLine($"{reservation.Item1},{reservation.Item2},{reservation.Item3},{reservation.Item4},{reservation.Item5}");
-            }
-        }
+        writer.WriteLine($"{refund.Item1},{refund.Item2},{refund.Item3},{refund.Item4},{refund.Item5}");
     }
 }
 
+
+ public static List<Tuple<string, DateTime, int, string, string>> ReadRefunds()
+        {
+            List<Tuple<string, DateTime, int, string, string>> refunds = new List<Tuple<string, DateTime, int, string, string>>();
+
+            try
+            {
+                // Check if the file exists
+                if (File.Exists(refundsFilePath))
+                {
+                    // Read all lines from the file
+                    string[] lines = File.ReadAllLines(refundsFilePath);
+
+                    // Parse each line and add to the refunds list
+                    foreach (string line in lines)
+                    {
+                        string[] parts = line.Split(',');
+                        if (parts.Length == 5)
+                        {
+                            string reservationNumber = parts[0];
+                            DateTime date = DateTime.Parse(parts[1]);
+                            int roomNumber = int.Parse(parts[2]);
+                            string customerName = parts[3];
+                            string paymentConfirmation = parts[4];
+
+                            refunds.Add(new Tuple<string, DateTime, int, string, string>(
+                                reservationNumber, date, roomNumber, customerName, paymentConfirmation));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading refunds: {ex.Message}");
+            }
+
+            return refunds;
+        }
 
     }
 }
