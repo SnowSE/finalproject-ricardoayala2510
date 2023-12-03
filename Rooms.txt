@@ -1,0 +1,54 @@
+100, Single
+101, Single
+102, Single
+103, Single
+104, Single
+110, Double
+111, Double
+150, Suite
+151, Suite
+152, Suite
+200, Single
+201, Single
+202, Single
+203, Single
+204, Single
+210, Double
+211, Double
+250, Suite
+251, Suite
+252, Suite
+300, Single
+301, Single
+302, Single
+303, Single
+304, Single
+310, Double
+311, Double
+350, Suite
+351, Suite
+352, Suite
+400, Single
+401, Single
+402, Single
+403, Single
+404, Single
+410, Double
+411, Double
+450, Suite
+451, Suite
+452, Suite
+500, Single
+501, Single
+502, Single
+503, Single
+504, Single
+510, Double
+511, Double
+550, Suite
+551, Suite
+552, Suite
+340,Suite
+244,Single
+230,Double
+200,single

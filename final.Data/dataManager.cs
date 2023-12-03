@@ -45,9 +45,17 @@ namespace final.data
                 foreach (string line in File.ReadLines(roomsFilePath))
                 {
                     string[] parts = line.Split(',');
-                    int roomNumber = int.Parse(parts[0]);
-                    string roomType = parts[1];
-                    roomList.Add((roomNumber, roomType));
+
+                    // Ensure that there are at least 2 parts before attempting to parse
+                    if (parts.Length >= 2 && int.TryParse(parts[0], out int roomNumber))
+                    {
+                        string roomType = parts[1];
+                        roomList.Add((roomNumber, roomType));
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid data format in line: {line}");
+                    }
                 }
             }
 
@@ -57,7 +65,7 @@ namespace final.data
         /// Reads customer data from the 'Customers.txt' file and returns a list of customer tuples.
         public static List<(string, string)> ReadCustomers()
         {
-            List<(string, string)> customerList = new ();
+            List<(string, string)> customerList = new();
 
             if (File.Exists(customersFilePath))
             {
@@ -138,55 +146,42 @@ namespace final.data
                 }
             }
         }
-public static List<(string, decimal)> ReadRoomPrices()
-{
-    List<(string, decimal)> roomPricesList = new List<(string, decimal)>();
-
-    if (File.Exists(roomPricesFilePath))
-    {
-        foreach (string line in File.ReadLines(roomPricesFilePath))
+        public static List<(string, decimal)> ReadRoomPrices()
         {
-            string[] parts = line.Split(',');
+            List<(string, decimal)> roomPricesList = new List<(string, decimal)>();
 
-            if (parts.Length >= 2 && decimal.TryParse(parts[1], out decimal price))
+            if (File.Exists(roomPricesFilePath))
             {
-                roomPricesList.Add((parts[0], price));
+                foreach (string line in File.ReadLines(roomPricesFilePath))
+                {
+                    string[] parts = line.Split(',');
+
+                    if (parts.Length >= 2 && decimal.TryParse(parts[1], out decimal price))
+                    {
+                        roomPricesList.Add((parts[0], price));
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid data format in line: {line}");
+                    }
+                }
             }
-            else
+
+            return roomPricesList;
+        }
+
+        public static void WriteRoomPrices(List<(string, decimal)> roomPrices)
+        {
+            using (StreamWriter writer = new StreamWriter(roomPricesFilePath))
             {
-                Console.WriteLine($"Invalid data format in line: {line}");
+                foreach (var roomPrice in roomPrices)
+                {
+                    writer.WriteLine($"{roomPrice.Item1},{roomPrice.Item2}");
+                }
             }
         }
-    }
 
-    return roomPricesList;
-}
-
-public static void WriteRoomPrices(List<(string, decimal)> roomPrices)
-{
-    using (StreamWriter writer = new StreamWriter(roomPricesFilePath))
-    {
-        foreach (var roomPrice in roomPrices)
-        {
-            writer.WriteLine($"{roomPrice.Item1},{roomPrice.Item2}");
-        }
-    }
-}
-
-public static void WriteRefunds(Tuple<string, DateTime, int, string, string> refund)
-{
-    // File path for the refunds file
-    string refundsFilePath = "Refunds.txt";
-
-    // Write the refund to the refunds file
-    using (StreamWriter writer = new StreamWriter(refundsFilePath, true))
-    {
-        writer.WriteLine($"{refund.Item1},{refund.Item2},{refund.Item3},{refund.Item4},{refund.Item5}");
-    }
-}
-
-
- public static List<Tuple<string, DateTime, int, string, string>> ReadRefunds()
+        public static List<Tuple<string, DateTime, int, string, string>> ReadRefunds()
         {
             List<Tuple<string, DateTime, int, string, string>> refunds = new List<Tuple<string, DateTime, int, string, string>>();
 
@@ -224,5 +219,17 @@ public static void WriteRefunds(Tuple<string, DateTime, int, string, string> ref
             return refunds;
         }
 
+        public static void WriteRefunds(Tuple<string, DateTime, int, string, string> refund)
+        {
+            // File path for the refunds file
+            string refundsFilePath = "Refunds.txt";
+
+            // Write the refund to the refunds file
+            using (StreamWriter writer = new StreamWriter(refundsFilePath, true))
+            {
+                writer.WriteLine($"{refund.Item1},{refund.Item2},{refund.Item3},{refund.Item4},{refund.Item5}");
+            }
+        }
     }
+
 }

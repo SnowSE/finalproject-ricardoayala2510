@@ -10,12 +10,10 @@ namespace final.logic
     public static class ReservationManager
     {
 
-
         static List<(int number, string roomType)> rooms = new();
-        static List<(string newRoomNumber, string newRoomType)> customers = new();
+        static List<(string newCustomerName, string newCardNumber)> customers = new();
         static List<Tuple<string, DateTime, int, string, string>> reservations = new();
         static List<(string, decimal)> prices = new();
-
         public static void LoadData()
         {
             rooms = DataManager.ReadRooms();
@@ -30,7 +28,6 @@ namespace final.logic
             DataManager.WriteCustomers(customers);
             DataManager.WriteReservations(reservations);
             DataManager.WriteRoomPrices(prices);
-
         }
         public static void ClearData()
         {
@@ -43,9 +40,19 @@ namespace final.logic
         {
             // Add the new room to the list
             rooms.Add((newRoomNumber, newRoomType));
-
         }
-
+        public static bool RoomNumberExists(int roomNumber)
+        {
+            // Check if the room number already exists in the list of rooms
+            foreach (var room in rooms)
+            {
+                if (room.number == roomNumber)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// Adds a new customer with the specified name and card number.
 
@@ -58,54 +65,46 @@ namespace final.logic
 
 
         /// Adds a new reservation with the specified date, room number, and customer name.
-       public static void AddNewReservation(DateTime checkInDate, DateTime checkOutDate, int newReservationRoomNumber, string newReservationCustomerName)
-{
-    // Check if the room is available for reservation for all days
-    for (DateTime date = checkInDate; date <= checkOutDate; date = date.AddDays(1))
-    {
-        if (!IsRoomAvailable(newReservationRoomNumber, date, reservations))
+        public static void AddNewReservation(DateTime checkInDate, DateTime checkOutDate, int newReservationRoomNumber, string newReservationCustomerName)
         {
-            // Throw an exception if the room is not available for any day
-            throw new InvalidOperationException($"Error: Room {newReservationRoomNumber} is not available on {date.ToShortDateString()}.");
+            // Check if the room is available for reservation for all days
+            for (DateTime date = checkInDate; date <= checkOutDate; date = date.AddDays(1))
+            {
+                if (!IsRoomAvailable(newReservationRoomNumber, date, reservations))
+                {
+                    // Throw an exception if the room is not available for any day
+                    throw new InvalidOperationException($"Error: Room {newReservationRoomNumber} is not available on {date.ToShortDateString()}.");
+                }
+            }
+
+            // Check if the customer exists
+            if (CustomersContainName(customers, newReservationCustomerName))
+            {
+                // Generate payment confirmation and reservation number
+                string paymentConfirmation = Guid.NewGuid().ToString().Substring(0, 30);
+                string reservationNumber = Guid.NewGuid().ToString();
+
+                // Add the new reservation for all days to the list
+                for (DateTime date = checkInDate; date <= checkOutDate; date = date.AddDays(1))
+                {
+                    reservations.Add(new Tuple<string, DateTime, int, string, string>(
+                        reservationNumber, date, newReservationRoomNumber, newReservationCustomerName, paymentConfirmation));
+                }
+
+                // Write the updated reservations list to the data manager
+                DataManager.WriteReservations(reservations);
+            }
+            else
+            {
+                // Throw an exception if the customer is not found
+                throw new InvalidOperationException($"Error: Customer '{newReservationCustomerName}' not found.");
+            }
         }
-    }
-
-    // Check if the customer exists
-    if (CustomersContainName(customers, newReservationCustomerName))
-    {
-        // Generate payment confirmation and reservation number
-        string paymentConfirmation = Guid.NewGuid().ToString().Substring(0, 30);
-        string reservationNumber = Guid.NewGuid().ToString();
-
-        // Add the new reservation for all days to the list
-        for (DateTime date = checkInDate; date <= checkOutDate; date = date.AddDays(1))
-        {
-            reservations.Add(new Tuple<string, DateTime, int, string, string>(
-                reservationNumber, date, newReservationRoomNumber, newReservationCustomerName, paymentConfirmation));
-        }
-
-        // Write the updated reservations list to the data manager
-        DataManager.WriteReservations(reservations);
-
-        // Fetch room type and price from RoomPrices.txt
-        // You can replace the following lines with your input mechanism
-        string roomType = "Single"; // Replace with your input mechanism
-        decimal roomPrice = GetRoomPrice(roomType);
-
-        // Calculate the discounted price
-        decimal discountedPrice = CalculateDiscountedPrice(roomPrice, newReservationCustomerName);
-    }
-    else
-    {
-        // Throw an exception if the customer is not found
-        throw new InvalidOperationException($"Error: Customer '{newReservationCustomerName}' not found.");
-    }
-}
 
 
         public static decimal CalculateDiscountedPrice(decimal originalPrice, string customerName)
         {
-            const int DiscountThreshold = 5; // Adjust the threshold as needed
+            const int DiscountThreshold = 5;
             const decimal DiscountPercentage = 0.1m; // 10% discount
 
             // Count the number of reservations for the customer
@@ -227,7 +226,7 @@ namespace final.logic
         }
         public static void ChangeRoomPrice(string roomType, decimal newPrice)
         {
-            // Check if the room number exists in the prices list
+            // Check if the room type exists in the prices list
             int index = -1;
             for (int i = 0; i < prices.Count; i++)
             {
@@ -245,8 +244,8 @@ namespace final.logic
             }
             else
             {
-                // Throw an exception if the room number is not found
-                throw new InvalidOperationException($"Error: Room {roomType} not found.");
+                // Throw an exception if the room type is not found
+                throw new InvalidOperationException($"Error: Room type {roomType} not found.");
             }
         }
 
@@ -270,7 +269,7 @@ namespace final.logic
             }
             else
             {
-                // Throw an exception if the room number is not found
+                // Throw an exception if the room type is not found
                 throw new InvalidOperationException($"Error: Room {roomType} not found.");
             }
         }
@@ -303,72 +302,68 @@ namespace final.logic
             }
         }
 
-
-        public static string GetRoomPricesText()
+        public static decimal CalculateUtilizationRate(DateTime reportDate)
         {
-            // String to store the room prices text
-            string roomPricesText = "";
+            // Get the total number of rooms
+            int totalRooms = rooms.Count;
 
-            // Iterate through the room prices
-            foreach (var roomPrice in prices)
+            // Get the number of reserved rooms for the specified date
+            int reservedRooms = 0;
+
+            foreach (var reservation in reservations)
             {
-                // Concatenate the formatted room price to the string
-                roomPricesText += $"{roomPrice.Item1},{roomPrice.Item2:C}\n";
+                if (reservation.Item2.Date == reportDate.Date)
+                {
+                    reservedRooms++;
+                }
             }
 
-            // Return the constructed room prices text
-            return roomPricesText;
+            // Calculate the utilization rate
+            decimal utilizationRate = (decimal)reservedRooms / totalRooms * 100;
+
+            return utilizationRate;
         }
-public static decimal CalculateUtilizationRate(DateTime reportDate)
-{
-    // Get the total number of rooms
-    int totalRooms = rooms.Count;
 
-    // Get the number of reserved rooms for the specified date
-    int reservedRooms = 0;
-
-    foreach (var reservation in reservations)
-    {
-        if (reservation.Item2.Date == reportDate.Date)
+        public static List<decimal> CalculateUtilizationRateRange(DateTime startDate, DateTime endDate)
         {
-            reservedRooms++;
-        }
-    }
+            List<decimal> utilizationRates = new List<decimal>();
 
-    // Calculate the utilization rate
-    decimal utilizationRate = (decimal)reservedRooms / totalRooms * 100;
+            // Get the total number of rooms
+            int totalRooms = rooms.Count;
 
-    return utilizationRate;
-}
-
-public static List<decimal> CalculateUtilizationRateRange(DateTime startDate, DateTime endDate)
-{
-    List<decimal> utilizationRates = new List<decimal>();
-
-    // Get the total number of rooms
-    int totalRooms = rooms.Count;
-
-    for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
-    {
-        // Get the number of reserved rooms for each day in the range
-        int reservedRooms = 0;
-
-        foreach (var reservation in reservations)
-        {
-            if (reservation.Item2.Date == date.Date)
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                reservedRooms++;
+                // Get the number of reserved rooms for each day in the range
+                int reservedRooms = 0;
+
+                foreach (var reservation in reservations)
+                {
+                    if (reservation.Item2.Date == date.Date)
+                    {
+                        reservedRooms++;
+                    }
+                }
+
+                // Calculate the utilization rate for each day
+                decimal utilizationRate = (decimal)reservedRooms / totalRooms * 100;
+
+                utilizationRates.Add(utilizationRate);
             }
+
+            return utilizationRates;
+        }
+        public static string GetRoomText()
+        {
+            string roomDetailsText = "";
+
+            foreach (var room in rooms)
+            {
+                roomDetailsText += $"{room.number},{room.roomType}\n";
+            }
+
+            return roomDetailsText;
         }
 
-        // Calculate the utilization rate for each day
-        decimal utilizationRate = (decimal)reservedRooms / totalRooms * 100;
-
-        utilizationRates.Add(utilizationRate);
-    }
-
-    return utilizationRates;
-}
 
     }
 

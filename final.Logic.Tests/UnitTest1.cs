@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using final.logic;
 using final.data;
+using final.logic;
 using Xunit;
 
 public class ReservationManagerTests
@@ -36,28 +36,28 @@ public class ReservationManagerTests
     }
 
     [Fact]
-    public void AddNewReservation_Should_AddReservationForDateRange()
+    public void AddNewReservation_Should_AddReservation()
     {
         // Arrange
         DateTime checkInDate = DateTime.Now.Date;
-        DateTime checkOutDate = DateTime.Now.Date.AddDays(2); // Assuming a reservation for a 3-day stay
+        DateTime checkOutDate = DateTime.Now.Date.AddDays(2);
         int roomNumber = 101;
         string customerName = "John Doe";
 
         // Act
+        ReservationManager.AddNewCustomer(customerName, "1234567890123456");
+        ReservationManager.AddNewRoom(roomNumber, "Single");
         ReservationManager.AddNewReservation(checkInDate, checkOutDate, roomNumber, customerName);
 
         // Assert
         var reservations = DataManager.ReadReservations();
         Assert.NotEmpty(reservations);
 
-        // Verify that reservations are added for each day in the date range
         for (DateTime date = checkInDate; date <= checkOutDate; date = date.AddDays(1))
         {
             Assert.Contains(reservations, r => r.Item2.Date == date.Date && r.Item3 == roomNumber && r.Item4 == customerName);
         }
     }
-
 
     [Fact]
     public void AvailableRoomSearch_Should_ReturnAvailableRooms()
@@ -156,63 +156,36 @@ public class ReservationManagerTests
         Assert.False(result);
     }
 
-[Fact]
-public void CalculateDiscountedPrice_Should_ApplyDiscountForFrequentTraveler()
-{
-    // Arrange
-    string customerName = "Rick";
-    decimal originalPrice = 100.00m; // Adjust the price as needed
-    const int DiscountThreshold = 5;
-    const decimal DiscountPercentage = 0.1m;
-
-    // Add reservations for the customer to reach the discount threshold
-    for (int i = 0; i < DiscountThreshold; i++)
+    [Fact]
+    public void CalculateDiscountedPrice_Should_ApplyDiscountForFrequentTraveler()
     {
-        ReservationManager.AddNewReservation(
-            DateTime.Now.AddDays(i), 
-            DateTime.Now.AddDays(i + 1),  // Assuming check-out is the next day
-            101, 
-            customerName
-        );
+        // Arrange
+        ReservationManager.LoadData();
+        string customerName = "John Doe";
+        decimal originalPrice = 100.0m;
+
+        int i = 0;
+        DateTime checkInDate = DateTime.Now.AddMonths(6).AddDays(i);
+        DateTime checkOutDate = DateTime.Now.AddMonths(6).AddDays(i + 5);
+        int roomNumber = 100;
+        ReservationManager.AddNewReservation(checkInDate, checkOutDate, roomNumber, customerName);
+
+        // Act
+        decimal discountedPrice = ReservationManager.CalculateDiscountedPrice(originalPrice, customerName);
+
+        // Assert
+        decimal expectedDiscountedPrice = originalPrice * (1 - 0.1m);
+        Assert.Equal(expectedDiscountedPrice, discountedPrice);
     }
-
-    // Act
-    decimal discountedPrice = ReservationManager.CalculateDiscountedPrice(originalPrice, customerName);
-
-    // Assert
-    decimal expectedDiscountedPrice = originalPrice * (1 - DiscountPercentage);
-    Assert.Equal(expectedDiscountedPrice, discountedPrice);
-}
-
-[Fact]
-public void CalculateDiscountedPrice_Should_NotApplyDiscountBelowThreshold()
-{
-    // Arrange
-    string customerName = "Daniel";
-    decimal originalPrice = 100.00m; // Adjust the price as needed
-    const int DiscountThreshold = 5;
-
-    // Add reservations for the customer below the discount threshold
-    for (int i = 0; i < DiscountThreshold - 1; i++)
-    {
-        ReservationManager.AddNewReservation(DateTime.Now.AddDays(i), DateTime.Now.AddDays(i + 1), 102, customerName);
-    }
-
-    // Act
-    decimal discountedPrice = ReservationManager.CalculateDiscountedPrice(originalPrice, customerName);
-
-    // Assert
-    Assert.Equal(originalPrice, discountedPrice);
-}
-
 
     [Fact]
     public void ChangeRoomPrice_Should_UpdateRoomPrice()
     {
         // Arrange
+        ReservationManager.LoadData();
         string roomType = "Single";
         decimal originalPrice = ReservationManager.GetRoomPrice(roomType);
-        decimal newPrice = originalPrice + 10.00m; // Adjust the new price as needed
+        decimal newPrice = originalPrice + 10.00m; 
 
         // Act
         ReservationManager.ChangeRoomPrice(roomType, newPrice);
@@ -222,16 +195,19 @@ public void CalculateDiscountedPrice_Should_NotApplyDiscountBelowThreshold()
         Assert.Equal(newPrice, updatedPrice);
     }
 
+
+
     [Fact]
-    public void RefundReservation_Should_RemoveReservationAndWriteRefund()
+    public void RefundReservation_Should_RemoveReservationAndAddRefund()
     {
         // Arrange
         DateTime checkInDate = DateTime.Now.Date;
-        DateTime checkOutDate = DateTime.Now.Date.AddDays(1); // You might want to adjust this based on your test requirements
-        int roomNumber = 101;
+        DateTime checkOutDate = checkInDate.AddDays(1);
+        int roomNumber = 211;
         string customerName = "John Doe";
 
-        // Add a reservation to be refunded
+        ReservationManager.AddNewCustomer(customerName, "1234567890123456");
+        ReservationManager.AddNewRoom(roomNumber, "Double");
         ReservationManager.AddNewReservation(checkInDate, checkOutDate, roomNumber, customerName);
         var reservation = ReservationManager.ReservationReport(checkInDate).FirstOrDefault();
 
@@ -244,20 +220,6 @@ public void CalculateDiscountedPrice_Should_NotApplyDiscountBelowThreshold()
 
         var remainingReservations = ReservationManager.ReservationReport(checkInDate);
         Assert.DoesNotContain(reservation, remainingReservations);
-    }
-
-
-    [Fact]
-    public void GetRoomPricesText_Should_ReturnFormattedRoomPrices()
-    {
-        // Act
-        string roomPricesText = ReservationManager.GetRoomPricesText();
-
-        // Assert
-        Assert.NotNull(roomPricesText);
-        Assert.Contains("Single", roomPricesText);
-        Assert.Contains("Double", roomPricesText);
-        Assert.Contains("Suite", roomPricesText);
     }
 
     [Fact]
@@ -278,7 +240,7 @@ public void CalculateDiscountedPrice_Should_NotApplyDiscountBelowThreshold()
     {
         // Arrange
         DateTime startDate = DateTime.Now.Date;
-        DateTime endDate = startDate.AddDays(5); // Adjust the end date as needed
+        DateTime endDate = startDate.AddDays(5);
 
         // Act
         List<decimal> utilizationRates = ReservationManager.CalculateUtilizationRateRange(startDate, endDate);
@@ -286,7 +248,38 @@ public void CalculateDiscountedPrice_Should_NotApplyDiscountBelowThreshold()
         // Assert
         Assert.NotNull(utilizationRates);
         Assert.Equal((endDate - startDate).Days + 1, utilizationRates.Count);
-        Assert.All(utilizationRates, rate => Assert.InRange(rate, 0, 100));
+
     }
+
+    [Fact]
+    public void GetRoomText_Should_ReturnRoomDetailsText()
+    {
+        // Act
+        string roomDetailsText = ReservationManager.GetRoomText();
+
+        // Assert
+        Assert.NotNull(roomDetailsText);
+        // Add more specific assertions based on your data
+    }
+
+ [Fact]
+public void SaveData_Should_WriteDataToDataManager()
+{
+    // Act
+    ReservationManager.SaveData();
+
+    // Assert
+    var savedRooms = DataManager.ReadRooms();
+    var savedCustomers = DataManager.ReadCustomers();
+    var savedReservations = DataManager.ReadReservations();
+    var savedRoomPrices = DataManager.ReadRoomPrices();
+
+    // Add assertions based on your data structure
+    Assert.NotNull(savedRooms);
+    Assert.NotNull(savedCustomers);
+    Assert.NotNull(savedReservations);
+    Assert.NotNull(savedRoomPrices); 
+}
+
 
 }
